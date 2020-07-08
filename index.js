@@ -30,43 +30,49 @@ let persons = [
       }
 ]
 
-  app.use(express.json())
-  app.use(morgan('tiny'))
+morgan.token('postContent', function getContent (req) {
+    const jsonContent = req.body
+    return JSON.stringify(jsonContent)
+})
+
+app.use(express.json())
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postContent'))
+
   
-  app.get('/', (req, res) =>{
-    res.send('<h1>Phonebook</h1>')
-  })
+app.get('/', (req, res) =>{
+res.send('<h1>Phonebook</h1>')
+})
 
-  app.get('/info', (req, res) =>{
-      const length = persons.length
-      const date = new Date()
-      res.send(`<p>Phonebook has info for ${length} persons</p>
-      <p>${date} (Eastern European Standard Time)</p>`)
-  })
+app.get('/info', (req, res) =>{
+    const length = persons.length
+    const date = new Date()
+    res.send(`<p>Phonebook has info for ${length} persons</p>
+    <p>${date} (Eastern European Standard Time)</p>`)
+})
 
-  app.get('/api/persons', (req, res) =>{
-      res.json(persons)
-  })
-  app.get('/api/persons/:id', (req, res) =>{
-      const id = Number(req.params.id)
-      const person = persons.find(person => person.id === id)
+app.get('/api/persons', (req, res) =>{
+    res.json(persons)
+})
+app.get('/api/persons/:id', (req, res) =>{
+    const id = Number(req.params.id)
+    const person = persons.find(person => person.id === id)
 
-      if (person){
+    if (person){
         res.json(person)
-      } else{
-          res.status(404).end()
-      }
+    } else{
+        res.status(404).end()
+    }
       
-  })
+})
 
-  app.delete('/api/persons/:id', (req, res) =>{
-      const id = Number(req.params.id)
-      persons = persons.filter(person => person.id !== id)
+app.delete('/api/persons/:id', (req, res) =>{
+    const id = Number(req.params.id)
+    persons = persons.filter(person => person.id !== id)
 
-      res.status(204).end()
-  })
+    res.status(204).end()
+})
 
-  app.post('/api/persons', (req, res) =>{
+app.post('/api/persons', (req, res) =>{
     const person = req.body
 
     if (!person.name || !person.number){
