@@ -39,6 +39,7 @@ morgan.token('postContent', function getContent (req) {
 app.use(express.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postContent'))
 app.use(cors())
+app.use(express.static('build'))
 
   
 app.get('/', (req, res) =>{
