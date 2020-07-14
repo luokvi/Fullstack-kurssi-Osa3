@@ -1,35 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
 
-let persons = [
-    {
-        "name": "Arto Hellas",
-        "number": "040-123456",
-        "id": 1
-      },
-      {
-        "name": "Ada Lovelace",
-        "number": "39-44-5323523",
-        "id": 2
-      },
-      {
-        "name": "Dan Abramov",
-        "number": "12-43-234345",
-        "id": 3
-      },
-      {
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122",
-        "id": 4
-      },
-      {
-        "name": "Matti Meikäläinen",
-        "number": "12-345-6789",
-        "id": 5
-      }
-]
+let persons = []
 
 morgan.token('postContent', function getContent (req) {
     const jsonContent = req.body
@@ -54,17 +30,22 @@ app.get('/info', (req, res) =>{
 })
 
 app.get('/api/persons', (req, res) =>{
-    res.json(persons)
+    Person.find({ }).then(found =>{
+      console.log('Found', found)
+      res.json(found)
+    })
 })
 app.get('/api/persons/:id', (req, res) =>{
-    const id = Number(req.params.id)
-    const person = persons.find(person => person.id === id)
-
-    if (person){
-        res.json(person)
-    } else{
+    const id = req.params.id
+    
+    Person.findById(id).then(found =>{
+      if(found){
+        res.json(found)
+      } else{
         res.status(404).end()
-    }
+      }
+      
+    })
       
 })
 
@@ -76,13 +57,15 @@ app.delete('/api/persons/:id', (req, res) =>{
 })
 
 app.post('/api/persons', (req, res) =>{
-    const person = req.body
+    const body = req.body
 
-    if (!person.name || !person.number){
+    if (!body.name || !body.number){
         return res.status(400).json({ 
             error: 'content missing' 
           })
       }
+
+    /*
     const match = (p) => p.name === person.name
     const alreadyInList = persons.some(match)
     if(alreadyInList){
@@ -90,13 +73,19 @@ app.post('/api/persons', (req, res) =>{
             error: 'name must be unique' 
           }) 
     }
+    */
 
-
-    person.id = Math.floor(Math.random() * 10 + 5)
-      
+    console.log('adding: ', body)
+    
+    const person = new Person({
+      name: body.name,
+      number: body.number,
+    })
     persons.concat(person)
 
-    res.json(person)
+    person.save().then(saved =>{
+      res.json(saved)
+    })
   })
 
 const PORT = process.env.PORT || 3001
