@@ -5,7 +5,6 @@ const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
 
-let persons = []
 
 morgan.token('postContent', function getContent (req) {
     const jsonContent = req.body
@@ -22,20 +21,24 @@ app.get('/', (req, res) =>{
 res.send('<h1>Phonebook</h1>')
 })
 
-app.get('/info', (req, res) =>{
-    const length = persons.length
-    const date = new Date()
-    res.send(`<p>Phonebook has info for ${length} persons</p>
-    <p>${date} (Eastern European Standard Time)</p>`)
+app.get('/info', (req, res, next) =>{
+    Person.find({ }).then(found =>{
+      console.log(found)
+      const length = found.length
+      const date = new Date()
+      res.send(`<p>Phonebook has info for ${length} persons</p>
+      <p>${date} (Eastern European Standard Time)</p>`)
+    })
+    .catch(error => next(error))
+    
 })
 
 app.get('/api/persons', (req, res) =>{
     Person.find({ }).then(found =>{
-      console.log('Found', found)
       res.json(found)
     })
 })
-app.get('/api/persons/:id', (req, res) =>{
+app.get('/api/persons/:id', (req, res, next) =>{
     const id = req.params.id
     
     Person.findById(id).then(found =>{
@@ -46,14 +49,18 @@ app.get('/api/persons/:id', (req, res) =>{
       }
       
     })
+    .catch(error => next(error))
       
 })
 
 app.delete('/api/persons/:id', (req, res) =>{
-    const id = Number(req.params.id)
-    persons = persons.filter(person => person.id !== id)
+    const id = req.params.id
+    Person.findByIdAndDelete(id)
+    .then(result =>{
+      res.status(204).end()
+    })
 
-    res.status(204).end()
+    
 })
 
 app.post('/api/persons', (req, res) =>{
@@ -81,12 +88,37 @@ app.post('/api/persons', (req, res) =>{
       name: body.name,
       number: body.number,
     })
-    persons.concat(person)
+    
 
     person.save().then(saved =>{
       res.json(saved)
     })
   })
+
+  app.put('/api/persons/:id', (req, res, next) =>{
+    const body = req.body
+    const updated = {
+      name: body.name,
+      number: body.number,
+    }
+
+    Person.findByIdAndUpdate(req.params.id, updated, {new: true})
+    .then(response =>{
+      res.json(response)
+    })
+    .catch(error => next(error))
+  })
+
+  const errorHandler = (error, req, res, next) =>{
+    console.error(error.message)
+
+    if (error.name === 'CastError'){
+      return res.status(400).send({error: 'malformed id'})
+    }
+
+    next(error)
+  }
+  app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () =>{
