@@ -108,7 +108,7 @@ app.post('/api/persons', (req, res, next) =>{
       return res.status(400).send({error: 'malformed id'})
     }
     if (error.name === 'ValidationError'){
-      return res.status(409).send({error: 'name must be unique'})
+      return res.status(409).send({error: error.message})
     }
 
     next(error)
