@@ -63,7 +63,7 @@ app.delete('/api/persons/:id', (req, res) =>{
     
 })
 
-app.post('/api/persons', (req, res) =>{
+app.post('/api/persons', (req, res, next) =>{
     const body = req.body
 
     if (!body.name || !body.number){
@@ -72,15 +72,6 @@ app.post('/api/persons', (req, res) =>{
           })
       }
 
-    /*
-    const match = (p) => p.name === person.name
-    const alreadyInList = persons.some(match)
-    if(alreadyInList){
-        return res.status(400).json({ 
-            error: 'name must be unique' 
-          }) 
-    }
-    */
 
     console.log('adding: ', body)
     
@@ -93,6 +84,7 @@ app.post('/api/persons', (req, res) =>{
     person.save().then(saved =>{
       res.json(saved)
     })
+    .catch(error => next(error))
   })
 
   app.put('/api/persons/:id', (req, res, next) =>{
@@ -114,6 +106,9 @@ app.post('/api/persons', (req, res) =>{
 
     if (error.name === 'CastError'){
       return res.status(400).send({error: 'malformed id'})
+    }
+    if (error.name === 'ValidationError'){
+      return res.status(409).send({error: 'name must be unique'})
     }
 
     next(error)
