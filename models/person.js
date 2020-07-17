@@ -6,25 +6,25 @@ mongoose.set('useCreateIndex', true)
 const url = process.env.MONGODB_URI
 console.log('connecting to mongo', url)
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(result =>{
-        console.log('connected!')
-    })
-    .catch((error) =>{
-        console.log('error connectiong: ', error.message)
-    })
+  .then( result => {
+    console.log('connected!')
+  })
+  .catch((error) => {
+    console.log('error connecting: ', error.message)
+  })
 
 const phonebookSchema = new mongoose.Schema({
-  name: {type: String,required: true, unique: true, minlength: 3},
-  number: {type: String, required: true, minlength: 8},
+  name: { type: String,required: true, unique: true, minlength: 3 },
+  number: { type: String, required: true, minlength: 8 },
 })
 phonebookSchema.plugin(uniqueValidator)
 
 phonebookSchema.set('toJSON', {
-    transform: (document, returnedObject) =>{
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 
