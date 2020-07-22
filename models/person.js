@@ -6,7 +6,7 @@ mongoose.set('useCreateIndex', true)
 const url = process.env.MONGODB_URI
 console.log('connecting to mongo', url)
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then( result => {
+  .then( () => {
     console.log('connected!')
   })
   .catch((error) => {
